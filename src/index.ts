@@ -114,7 +114,7 @@ export async function startAgents(goal: string): Promise<void> {
       if (critique.isValid) {
         logger.info(`Plan validation succeeded on attempt ${currentTry}.`);
         validPlan = plan;
-    //     break;
+        break;
       }
       else {
         logger.warn(`Plan validation failed on attempt ${currentTry}. Retrying with feedback...`);
@@ -139,6 +139,6 @@ export async function startAgents(goal: string): Promise<void> {
   logger.info(`Plan Steps: ${validPlan.steps.map((step, index) => `  ${index + 1}. ${step.functionName} - ${step.description}`).join('\n')}`);
 
   // Create and use ExecuteAgent with the valid plan
-//   const executeAgent = new ExecuteAgent(client, contractAddress as Address, abi);
-//   await executeAgent.executePlan(validPlan);
+  const executeAgent = new ExecuteAgent(client, contractAddress as Address, abi);
+  await executeAgent.executePlan(validPlan);
 }

@@ -41,29 +41,26 @@ export default class PlanAgent {
       stateMutability: func.stateMutability
     }));
 
-    let userPrompt = `Create a plan to explore and understand a smart contract using these read-only functions:
-${JSON.stringify(functionDescriptions, null, 2)}`;
-
-    if (this.sourceCode) {
-      userPrompt += `\n\nHere is the contract's source code for context:
-${this.sourceCode}`;
-    }
-
-    userPrompt += `\n\nCreate a structured plan that:
-1. Has a clear goal for understanding the contract
+    const systemPrompt = `
+You are a blockchain expert who creates structured plans for acheiving a user's goal by calling smart contract functions.
+    
+You will create a structured plan that:
+1. Has a clear goal
 2. Lists specific function calls to make
 3. Explains why each call is useful
-4. Suggests input values where needed`;
+4. Suggests input values where needed
+`;
+    let userPrompt = `# Goal:\n\n${goal}`;
+    userPrompt += `\n\n## Available functions:\n\n\`\`\`json\n${JSON.stringify(functionDescriptions, null, 2)}\n\`\`\``;
 
-    userPrompt += `\n\nOur goal is to... ${goal}`;
+    if (this.sourceCode) {
+      userPrompt += `\n\n## Contract Source Code:\n\n\`\`\`solidity\n${this.sourceCode}\n\`\`\``;
+    }
 
     // Include the previous critique in the prompt if it exists
-    const critiqueFeedback = this.lastCritique 
-      ? `Previous plan critique: ${this.lastCritique}\nPlease address these issues in the new plan.`
+    userPrompt += this.lastCritique 
+      ? `\n\n## Previous plan critique:\n\n${this.lastCritique}`
       : '';
-
-    // Modify your prompt to include the critique feedback
-    userPrompt = `${critiqueFeedback}\n\n${userPrompt}`;
 
     // Define the function for structured output
     const planFunction = {
@@ -115,7 +112,7 @@ ${this.sourceCode}`;
         model: "gpt-4o-mini",
         messages: [{
           role: "system",
-          content: "You are a blockchain expert who creates structured plans for exploring smart contracts."
+          content: systemPrompt
         }, {
           role: "user",
           content: userPrompt
