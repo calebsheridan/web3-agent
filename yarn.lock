@@ -441,7 +441,7 @@ node-fetch@^2.6.7:
   dependencies:
     whatwg-url "^5.0.0"
 
-nodemon@^3.1.7:
+nodemon@3.1.7:
   version "3.1.7"
   resolved "https://registry.yarnpkg.com/nodemon/-/nodemon-3.1.7.tgz#07cb1f455f8bece6a499e0d72b5e029485521a54"
   integrity sha512-hLj7fuMow6f0lbB0cD14Lz2xNjwsyruH251Pk4t/yIitCFJbmY1myuLlHm/q06aST4jg6EgAh74PIBBrRqpVAQ==
@@ -469,7 +469,7 @@ one-time@^1.0.0:
   dependencies:
     fn.name "1.x.x"
 
-openai@^4.71.1:
+openai@4.71.1:
   version "4.71.1"
   resolved "https://registry.yarnpkg.com/openai/-/openai-4.71.1.tgz#f26bf5db00d75703676d80bf0ae7cb7674e41eac"
   integrity sha512-C6JNMaQ1eijM0lrjiRUL3MgThVP5RdwNAghpbJFdW0t11LzmyqON8Eh8MuUuEZ+CeD6bgYl2Fkn2BoptVxv9Ug==

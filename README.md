@@ -35,3 +35,30 @@ info: Executing plan...
 debug: Executing contract call with: {"address":"0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84","args":["0x98078db053902644191f93988341e31289e1c8fe"],"functionName":"balanceOf"}
 info: Actual Output: 301210230623954684196129
 ```
+
+Input:
+
+```bash
+npx plan "What is the latest Uniswap Factory pair?"
+```
+
+Output:
+
+```bash
+[info]: Executing plan...
+[info]: Step 1: allPairsLength
+  - Get the total number of pairs created in the Uniswap factory contract.
+  - uint256: The total number of pairs created.
+[info]: Expected Output:
+[debug]: Executing contract call with:
+[info]: Output: 389945
+[info]: Step 2: allPairs
+  - Get the address of the latest pair from the stored array of all pairs.
+  - address: The address of the latest pair.
+[debug]: Retrieved value matches: <retrieved 0 - 1> <retrieved 0 - 1>,0,-,1
+[info]: Inputs:
+  -  (uint256): 389944
+[info]: Expected Output:
+[debug]: Executing contract call with:
+[info]: Output: 0x60DC410a2b8F00cf4e818bE901853702c95c4927
+```

@@ -25,9 +25,7 @@ async function createAndCritiquePlan(
   ).join('\n');
   
   logger.info(
-    `Plan Goal: ${plan.goal}\n` +
-    'Plan Steps:\n' +
-    planSteps
+    `Plan Goal: ${plan.goal}\nPlan Steps:\n${planSteps}`
   );
 
   const critique = await critiqueAgent.critiquePlan(goal, plan, context);
@@ -45,7 +43,7 @@ export async function startAgents(goal: string): Promise<void> {
   });
 
   const chainId = '1';
-  const contractAddress = '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84';
+  const contractAddress = '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f';
   
   // Get initial contract data
   let { abi, sourceCode } = await getContractData(chainId, contractAddress);
@@ -118,12 +116,9 @@ export async function startAgents(goal: string): Promise<void> {
       }
       else {
         logger.warn(`Plan validation failed on attempt ${currentTry}. Retrying with feedback...`);
+        // Pass the critique feedback to the PlanAgent for the next attempt
+        planAgent.incorporateFeedback(critique.feedback);
       }
-      
-      
-      // Pass the critique feedback to the PlanAgent for the next attempt
-      planAgent.incorporateFeedback(critique.feedback);
-      
     } catch (error) {
       logger.error(`Error on attempt ${currentTry}:`, error);
     }

@@ -1,6 +1,9 @@
 import { createLogger, format, transports } from 'winston';
 import path from 'path';
 import fs from 'fs';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 // Get project root directory (where package.json is)
 const projectRoot = process.cwd();
@@ -9,7 +12,6 @@ const logsDir = path.join(projectRoot, 'logs');
 if (process.env.LOG_TO_FILE === 'true') {
   if (!fs.existsSync(logsDir)) {
     fs.mkdirSync(logsDir);
-    console.log(`Created logs directory at: ${logsDir}`);
   }
 }
 
@@ -31,19 +33,26 @@ const logger = createLogger({
     new transports.Console({
       format: format.combine(
         format.colorize(),
-        format.simple()
+        format.printf(({ level, message }) => {
+          return `[${level}]: ${message}`;
+        })
       )
     })
   ]
 });
 
-// Add file transport if LOG_TO_FILE env var is set
 if (process.env.LOG_TO_FILE === 'true') {
+  if (!fs.existsSync(logsDir)) {
+    fs.mkdirSync(logsDir);
+  }
+
   const fileTransport = new transports.File({
     filename: path.join(logsDir, getLogFileName()),
     format: format.combine(
       format.timestamp(),
-      format.json()
+      format.printf(({ timestamp, level, message }) => {
+        return `${timestamp} [${level}]: ${message}`;
+      })
     ),
     maxsize: 5242880, // 5MB
     maxFiles: 5
@@ -51,7 +60,7 @@ if (process.env.LOG_TO_FILE === 'true') {
   
   logger.add(fileTransport);
   
-  // Updated log messages to show the actual filename being used
+  // Add debug message to confirm file transport was added
   const currentLogFile = path.join(logsDir, getLogFileName());
   logger.info(`File logging enabled - writing to ${currentLogFile}`);
 }

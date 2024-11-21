@@ -6,7 +6,10 @@ export interface PlanStep {
       type: string;
       value?: any;
     }[];
-    expectedOutput: string;
+    expectedOutput: {
+        type: string;
+        description: string;
+    };
   }
 
 export interface ExecutionPlan {

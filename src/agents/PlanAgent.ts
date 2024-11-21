@@ -49,6 +49,11 @@ You will create a structured plan that:
 2. Lists specific function calls to make
 3. Explains why each call is useful
 4. Suggests input values where needed
+
+If you are referencing a previous step's output, use the format <retrieved {previousStepIndex}>.
+If you are performing a mathematical operation on a previous step's output, use the format <retrieved {previousStepIndex} {operation} {operand}>.
+- For subtraction use "-", for addition use "+", for multiplication use "*", and for division use "/".
+- For example, if the first step returned 10 and you want to subtract 1, you would use <retrieved 0 - 1>.
 `;
     let userPrompt = `# Goal:\n\n${goal}`;
     userPrompt += `\n\n## Available functions:\n\n\`\`\`json\n${JSON.stringify(functionDescriptions, null, 2)}\n\`\`\``;
