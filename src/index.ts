@@ -20,11 +20,15 @@ async function createAndCritiquePlan(
   }
 ): Promise<{ plan: ExecutionPlan, critique: { isValid: boolean, feedback: string } }> {
   const plan = await planAgent.createPlan(goal);
-  logger.info(`Plan Goal: ${plan.goal}`);
-  logger.info('Plan Steps:');
-  plan.steps.forEach((step, index) => {
-    logger.info(`  ${index + 1}. ${step.functionName} - ${step.description}`);
-  });
+  const planSteps = plan.steps.map((step, index) => 
+    `  ${index + 1}. ${step.functionName} - ${step.description}`
+  ).join('\n');
+  
+  logger.info(
+    `Plan Goal: ${plan.goal}\n` +
+    'Plan Steps:\n' +
+    planSteps
+  );
 
   const critique = await critiqueAgent.critiquePlan(goal, plan, context);
   logger.info(`Plan Critique: ${critique.feedback}`);
@@ -32,7 +36,7 @@ async function createAndCritiquePlan(
   return { plan, critique };
 }
 
-async function startAgents(): Promise<void> {
+export async function startAgents(goal: string): Promise<void> {
   logger.info('Starting Web3 Agent...');
   // Initialize Viem client
   const client = createPublicClient({
@@ -59,12 +63,13 @@ async function startAgents(): Promise<void> {
 
     try {
       // Call implementation function
-      const implementationAddress: Address = await client.readContract({
+      // @ts-ignore
+      const implementationAddress = await client.readContract({
         address: contractAddress as Address,
         abi: [implementationFunction] as const,
         functionName: implementationFunction.name,
         args: []
-      });
+      }) as Address;
       logger.info(`Implementation address: ${implementationAddress}`);
       
       // Get the actual contract data from the implementation
@@ -80,9 +85,6 @@ async function startAgents(): Promise<void> {
   const readOnlyAbis = functionAbis.filter((item: AbiFunction) => 
     item.stateMutability === 'view' || item.stateMutability === 'pure'
   );
-
-  const goal = "Read the stETH balance of this account: `0x98078db053902644191f93988341e31289e1c8fe`"
-//   const goal = "Transfer all stETH from `0x98078db053902644191f93988341e31289e1c8fe` to `0x12348db053902644191f93988341e31289e1c8fe`"
 
   const planAgent = new PlanAgent(readOnlyAbis, sourceCode);
   const critiqueAgent = new CritiqueAgent();
@@ -107,14 +109,17 @@ async function startAgents(): Promise<void> {
           abi
         }
       );
+      logger.debug(`Critique feedback: ${critique.feedback}`);
       
       if (critique.isValid) {
+        logger.info(`Plan validation succeeded on attempt ${currentTry}.`);
         validPlan = plan;
         break;
       }
+      else {
+        logger.warn(`Plan validation failed on attempt ${currentTry}. Retrying with feedback...`);
+      }
       
-      logger.warn(`Plan validation failed on attempt ${currentTry}. Retrying with feedback...`);
-      logger.debug(`Critique feedback: ${critique.feedback}`);
       
       // Pass the critique feedback to the PlanAgent for the next attempt
       planAgent.incorporateFeedback(critique.feedback);
@@ -129,9 +134,11 @@ async function startAgents(): Promise<void> {
     return;
   }
 
+  logger.info(`Valid plan found after ${currentTry} attempts.`);
+  logger.info(`Plan Goal: ${validPlan.goal}`);
+  logger.info(`Plan Steps: ${validPlan.steps.map((step, index) => `  ${index + 1}. ${step.functionName} - ${step.description}`).join('\n')}`);
+
   // Create and use ExecuteAgent with the valid plan
   const executeAgent = new ExecuteAgent(client, contractAddress as Address, abi);
   await executeAgent.executePlan(validPlan);
 }
-
-startAgents();
